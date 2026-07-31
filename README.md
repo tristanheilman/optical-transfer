@@ -24,6 +24,7 @@ can drop it in however they choose.
 | --- | --- | --- |
 | [`@optical-transfer/core`](packages/core) | ✅ working, tested | Pure, dependency-free transport: `OpticalSender`, `OpticalReceiver`, fountain codec + frame protocol. Runs on Node, browsers, and React Native (Hermes). |
 | [`@optical-transfer/react-native`](packages/react-native) | ✅ iOS device-validated | Sender/receiver components: animated byte-mode QR (`react-native-qrcode-svg`) + camera capture (`react-native-vision-camera` v5). Includes a bare-RN example app. Send + receive verified on real iPhones. |
+| [`@optical-transfer/gif`](packages/gif) | ✅ working, tested | Encode a file as a **shareable animated GIF** of QR frames, and decode a GIF back into the file — asynchronous, offline transfer. Powers the [web viewer](docs/viewer/index.html). |
 
 ## The example app
 
@@ -55,6 +56,18 @@ phone's camera rebuild it. Screens below are iOS (iPhone, iOS 26):
 **send** side (animated QR display) works today; **receive** (QR scanning) is iOS-first in
 Vision Camera v5 and is on the roadmap. See
 [running the example](packages/react-native#running-the-example-app-ios).
+
+## Shareable GIF transfer
+
+Beyond the live screen→camera channel, a file can be packed into a **shareable
+animated GIF** of QR frames ([`@optical-transfer/gif`](packages/gif)). This makes
+transfer **asynchronous** — post the GIF anywhere and anyone reconstructs the file,
+no two devices in a room. Because the frames are generated (not filmed), decode is
+near-perfect, and fountain coding still tolerates a few frames mangled by re-encoding.
+
+- **Make a GIF** on a phone (Share as GIF) or in the browser.
+- **Decode a GIF** with the self-contained **[web viewer](docs/viewer/index.html)** —
+  drop a GIF, get the file back; nothing is uploaded, it all runs client-side.
 
 ## Core API
 
