@@ -99,6 +99,10 @@ The example is a small **test bench**:
   dropped-frame recovery, real transfer time).
 - **Tuning knobs** — toggle gzip compression and pick block size (64/128/256) and
   frame rate (5/10/15 fps) to compare transfer behavior.
+- **Share as GIF** — on the send screen, pack the payload into a shareable animated
+  QR GIF ([`@optical-transfer/gif`](../gif)) and open the OS share sheet. Anyone can
+  drop it into the [web viewer](../../docs/viewer/index.html) to reconstruct the
+  file — asynchronous transfer, no live camera session.
 
 Because core is a raw-byte transport, the example layers its own tiny envelope to
 carry type info — `mime\nfilename\nbytes` (see

@@ -28,6 +28,8 @@ import {
   DEFAULT_CODECS,
 } from "@optical-transfer/react-native";
 import { launchImageLibrary } from "react-native-image-picker";
+import Share from "react-native-share";
+import { encodeGif } from "@optical-transfer/gif";
 import { SAMPLES, type Sample, type SampleGroup } from "./samples";
 import { encodeEnvelope, decodeEnvelope, type Envelope } from "./payload";
 import { utf8Decode } from "./util";
@@ -283,6 +285,36 @@ function SendView({
   settings: Settings;
   onBack: () => void;
 }) {
+  const [gifStatus, setGifStatus] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // Pack the same payload into a shareable animated-QR GIF and open the OS share
+  // sheet. Anyone can drop it into the web viewer to reconstruct the file — no
+  // camera, no live session. Best for small payloads (bigger files = more frames).
+  async function shareAsGif() {
+    if (busy) return;
+    setBusy(true);
+    setGifStatus("Generating GIF…");
+    await new Promise((r) => setTimeout(r, 30)); // let the label paint before the (blocking) encode
+    try {
+      const { gif, frames } = encodeGif(bytes, {
+        codec: settings.compress ? gzipCodec : undefined,
+        blockLen: settings.blockLen,
+      });
+      setGifStatus(`${frames} frames · ${Math.max(1, Math.round(gif.length / 1024))} KB`);
+      await Share.open({
+        url: `data:image/gif;base64,${bytesToBase64(gif)}`,
+        type: "image/gif",
+        filename: "optical-transfer.gif",
+        failOnCancel: false,
+      });
+    } catch (e) {
+      setGifStatus(`GIF error: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.fill}>
       <Header title={`Sending ${label}`} onBack={onBack} />
@@ -299,6 +331,14 @@ function SendView({
           {settings.compress ? " · gzip" : " · raw"} · block {settings.blockLen} · {settings.fps} fps
         </Text>
         <Text style={styles.captionDim}>aim the other phone's camera here</Text>
+        <TouchableOpacity
+          style={[styles.button, styles.buttonGif, busy && styles.buttonBusy]}
+          onPress={shareAsGif}
+          disabled={busy}
+        >
+          <Text style={styles.buttonText}>{busy ? "Generating…" : "Share as GIF"}</Text>
+        </TouchableOpacity>
+        {gifStatus && <Text style={styles.captionDim}>{gifStatus}</Text>}
       </View>
     </SafeAreaView>
   );
@@ -417,6 +457,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonAlt: { backgroundColor: "#10b981" },
+  buttonGif: { backgroundColor: "#8b5cf6", marginTop: 24 },
+  buttonBusy: { opacity: 0.6 },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
   caption: { color: "#cbd2dc", fontSize: 13, marginTop: 20, textAlign: "center" },
   captionDim: { color: "#9aa0aa", fontSize: 12, marginTop: 6, textAlign: "center" },

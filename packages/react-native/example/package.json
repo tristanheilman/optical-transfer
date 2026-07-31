@@ -18,9 +18,11 @@
     "react-native-nitro-image": "*",
     "react-native-nitro-modules": "*",
     "react-native-qrcode-svg": "^6.3.15",
+    "react-native-share": "^12.3.1",
     "react-native-svg": "^15.14.0",
     "react-native-vision-camera": "^5.2.0",
-    "react-native-webview": "^14.0.1"
+    "react-native-webview": "^14.0.1",
+    "@optical-transfer/gif": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
