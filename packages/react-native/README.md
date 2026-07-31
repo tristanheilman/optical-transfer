@@ -105,13 +105,19 @@ carry type info — `mime\nfilename\nbytes` (see
 [`example/src/payload.ts`](example/src/payload.ts)). That's the intended pattern:
 apps add whatever metadata they need on top of the byte stream.
 
+### Screens
+
+See the [repository README](../../README.md#the-example-app) for a screenshot gallery
+of the example (menu, send + tuning, live QR, received image, received text).
+
 ## Status & caveats
 
 - ✅ Core transport, sender, base64 codec, and receiver hook are unit-verified;
   the example's full JS graph bundles cleanly under Metro.
-- ⚠️ The camera receiver is written against Vision Camera **v5** (a new nitro-based
-  API) and needs on-device validation — it has not been run on hardware here.
-- ⚠️ QR scanning in v5 is iOS-first (`ScannedObject` is `@platform iOS`).
+- ✅ The Vision Camera **v5** camera receiver is **validated on real iPhones**
+  (iOS 26 and iOS 16) — send + receive reconstruct files screen → camera.
+- ⚠️ QR scanning in v5 is iOS-first (`ScannedObject` is `@platform iOS`); the
+  sender works cross-platform, but Android receive is future work.
 - Throughput is bounded by how fast the scanner reads frames; for higher rates,
   a dedicated frame-processor plugin returning raw bytes could replace the
   base64-over-text channel.
