@@ -1,3 +1,7 @@
+// Derived from decimen-optical-transfer (MIT), Copyright (c) 2026 BashAlarmist.
+// https://github.com/bashalarmistalt/decimen-optical-transfer
+// See THIRD-PARTY-NOTICES.md at the repo root for the full upstream notice.
+//
 // LT (Luby transform) fountain code — the trick that makes a one-way optical
 // channel practical.
 //

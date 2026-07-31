@@ -1,3 +1,7 @@
+// Derived from decimen-optical-transfer (MIT), Copyright (c) 2026 BashAlarmist.
+// https://github.com/bashalarmistalt/decimen-optical-transfer
+// See THIRD-PARTY-NOTICES.md at the repo root for the full upstream notice.
+//
 // Frame protocol: every QR frame is fully self-describing, so there is NO
 // handshake — the receiver locks onto a stream mid-flight, and a new session
 // id on any frame simply starts a fresh transfer.

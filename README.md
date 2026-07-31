@@ -73,8 +73,12 @@ math and ports to Hermes **unchanged**. The remaining work is the platform I/O l
 
 ## Attribution & license
 
+This project is **MIT licensed** (see [`LICENSE`](LICENSE)).
+
 The fountain codec (`fountain.ts`) and frame protocol (`protocol.ts`) are derived from
 the [`decimen-optical-transfer`](https://github.com/bashalarmistalt/decimen-optical-transfer)
-proof-of-concept. **Confirm that project's license before publishing anything derived
-from it** — the license terms govern redistribution of those two files. Wrapper code in
-this repo (`sender.ts`, `receiver.ts`, tests, packaging) is offered under MIT.
+proof-of-concept, which is itself MIT licensed (Copyright © 2026 BashAlarmist). We comply
+by preserving the upstream copyright and permission notice in
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) and in each derived file's header — the
+only obligation MIT imposes. Everything else in this repo (`sender.ts`, `receiver.ts`,
+tests, packaging) is original and offered under the same MIT terms.

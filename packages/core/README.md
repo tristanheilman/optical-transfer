@@ -41,6 +41,7 @@ rx.result;                        // Uint8Array | null
 
 ## License
 
-MIT for the wrapper/packaging; the `fountain.ts` / `protocol.ts` transport is derived
-from [`decimen-optical-transfer`](https://github.com/bashalarmistalt/decimen-optical-transfer)
-— confirm its license before redistributing.
+MIT. The `fountain.ts` / `protocol.ts` transport is derived from
+[`decimen-optical-transfer`](https://github.com/bashalarmistalt/decimen-optical-transfer)
+(also MIT, © 2026 BashAlarmist); its notice is preserved in each file header and in the
+repo-root `THIRD-PARTY-NOTICES.md`.
