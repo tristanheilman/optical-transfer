@@ -20,3 +20,4 @@ coverage/
 *.hprof
 .watchmanconfig.local
 metro-cache/
+**/ios/.xcode.env.local
