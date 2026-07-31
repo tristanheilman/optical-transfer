@@ -18,7 +18,7 @@ can drop it in however they choose.
 | Package | Status | What it is |
 | --- | --- | --- |
 | [`@optical-transfer/core`](packages/core) | ✅ working, tested | Pure, dependency-free transport: `OpticalSender`, `OpticalReceiver`, fountain codec + frame protocol. Runs on Node, browsers, and React Native (Hermes). |
-| `@optical-transfer/react-native` | 🚧 planned | Thin native layer: a byte-mode QR renderer for sending and a Vision Camera frame processor for receiving. |
+| [`@optical-transfer/react-native`](packages/react-native) | ✅ JS verified · ⚠️ device-validate | Sender/receiver components: animated byte-mode QR (`react-native-qrcode-svg`) + camera capture (`react-native-vision-camera` v5). Includes a bare-RN example app. Camera receiver needs on-device validation. |
 
 ## Core API
 

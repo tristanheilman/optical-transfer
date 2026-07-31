@@ -1,0 +1,65 @@
+{
+  "name": "@optical-transfer/react-native",
+  "version": "0.0.0",
+  "description": "React Native bindings for optical-transfer: air-gapped file transfer over screen and camera (LT fountain + animated QR).",
+  "main": "src/index",
+  "types": "src/index",
+  "react-native": "src/index",
+  "files": [
+    "src"
+  ],
+  "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
+  "license": "MIT",
+  "homepage": "https://github.com/tristanheilman/optical-transfer#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tristanheilman/optical-transfer.git",
+    "directory": "packages/react-native"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "fountain-code",
+    "qr",
+    "air-gap",
+    "file-transfer",
+    "optical",
+    "vision-camera"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@optical-transfer/core": "*"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-qrcode-svg": ">=6.0.0",
+    "react-native-svg": ">=13.0.0",
+    "react-native-vision-camera": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@react-native/babel-preset": "0.85.0",
+    "@types/react": "^19.2.0",
+    "react": "19.2.3",
+    "react-native": "0.85.0",
+    "react-native-qrcode-svg": "^6.3.15",
+    "react-native-svg": "^15.14.0",
+    "react-native-vision-camera": "^5.2.0",
+    "typescript": "^5.6.3"
+  },
+  "create-react-native-library": {
+    "type": "library",
+    "languages": "js",
+    "tools": [
+      "eslint",
+      "jest",
+      "lefthook",
+      "release-it",
+      "vite"
+    ],
+    "version": "0.63.0"
+  }
+}

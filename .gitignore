@@ -7,3 +7,16 @@ coverage/
 *.tsbuildinfo
 .env
 .env.local
+
+# React Native / iOS / Android build artifacts
+**/ios/Pods/
+**/ios/build/
+**/ios/*.xcworkspace
+**/DerivedData/
+**/android/.gradle/
+**/android/app/build/
+**/android/build/
+**/.cxx/
+*.hprof
+.watchmanconfig.local
+metro-cache/
