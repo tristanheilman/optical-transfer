@@ -1,5 +1,10 @@
 # optical-transfer
 
+[![license](https://img.shields.io/github/license/tristanheilman/react-native-optical-transfer)](LICENSE)
+[![core](https://img.shields.io/badge/%40optical--transfer%2Fcore-tested-brightgreen)](packages/core)
+[![react-native](https://img.shields.io/badge/react--native-0.85-blue)](packages/react-native)
+[![status](https://img.shields.io/badge/status-experimental-orange)](#status)
+
 Air-gapped, one-way file transfer over **screen → camera**. One device animates a
 stream of QR codes; another films the screen and reconstructs the file. No network,
 no pairing, no handshake, no special permissions.
@@ -57,19 +62,26 @@ simulated channel that drops 30% of frames and reorders the rest — no camera r
 covering mid-stream lock-on, session restarts, a range of file/block sizes, checksum
 verification, and overhead bounds.
 
-## React Native roadmap
+## Status
 
-The hard, valuable logic (the fountain codec and frame protocol) is pure integer/typed-array
-math and ports to Hermes **unchanged**. The remaining work is the platform I/O layer:
+- ✅ **Core transport** — `OpticalSender` / `OpticalReceiver`, fountain codec, and frame
+  protocol. Unit-tested over a simulated lossy/reordered channel; builds clean.
+- ✅ **React Native layer** — sender/receiver components + example app. Typechecks against
+  the real native libs and the example bundles under Metro.
+- ⚠️ **On-device iOS run** — not yet validated on hardware. The camera receiver targets
+  Vision Camera **v5** (new nitro API) and needs a first device run to confirm the wiring.
+- ⏳ **Android receive** — v5 QR scanning is iOS-first; a fallback is future work.
 
-1. **Binary-safe QR round-trip** — the sharp edge. Frames are raw bytes, so the sender
-   needs a **byte / ISO-8859-1** QR segment mode (not UTF-8 strings), and the receiver
-   needs a scanner that returns **raw bytes** on both iOS and Android (MLKit `rawBytes` /
-   ZXing). Spike this first.
-2. **Sender component** — pump `sender.stream()` into a QR renderer, swapping frames at N fps.
-3. **Receiver hook** — a `react-native-vision-camera` frame processor that scans QR and
-   calls `receiver.ingest(bytes)`.
-4. **Example app** — send from one device, receive on another.
+The binary-safe QR round-trip (the original sharp edge — scanners hand back UTF-8, not raw
+bytes) is solved by carrying each frame as **base64 text** inside the QR, so any off-the-shelf
+renderer and scanner round-trip it exactly, at ~33% density cost.
+
+### What's next
+
+- First on-device run on iPhone (`pod install` → `run-ios --device`); iterate on any v5
+  camera wiring issues it surfaces.
+- Optionally swap the base64-over-text channel for a raw-bytes frame processor to recover
+  the ~33% density and push throughput.
 
 ## Attribution & license
 

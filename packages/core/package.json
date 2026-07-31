@@ -29,7 +29,17 @@
     "file-transfer",
     "optical"
   ],
+  "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
+  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer/tree/main/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/tristanheilman/react-native-optical-transfer/issues"
+  },
   "devDependencies": {
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"

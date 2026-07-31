@@ -13,7 +13,16 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
+  "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
+  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tristanheilman/react-native-optical-transfer/issues"
+  },
   "engines": {
     "node": ">=20"
   }
