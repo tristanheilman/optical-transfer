@@ -33,11 +33,11 @@ test bench for the transport: pick a media type (or a real photo), tune the tran
 phone's camera rebuild it. Screens below are iOS (iPhone, iOS 26):
 
 <!--
-  HERO — a real two-device photo. Add the image at docs/screenshots/hero.jpg,
-  then replace this comment with:
+  DEMO — a screen-capture of a real two-device transfer (a Rick Astley clip sent
+  screen → camera). Add the file at docs/demo.mp4, then replace this comment with:
   <p align="center">
-    <img src="docs/screenshots/hero.jpg" width="640" alt="One phone broadcasts the animated QR while the other's camera reconstructs the file">
-    <br><sub>A real transfer: the left phone broadcasts, the right phone's camera reconstructs the file — no network involved.</sub>
+    <video src="docs/demo.mp4" controls width="640" poster="docs/screenshots/03-sending.png"></video>
+    <br><sub>A real transfer: one phone broadcasts an animated QR stream, the other's camera reconstructs the file — no network involved.</sub>
   </p>
 -->
 
