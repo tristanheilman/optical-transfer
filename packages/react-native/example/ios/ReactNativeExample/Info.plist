@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>optical-transfer uses the camera to scan the animated QR codes shown on another device's screen.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>optical-transfer lets you pick a photo to send to another device over the optical channel.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>

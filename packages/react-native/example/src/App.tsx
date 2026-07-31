@@ -21,11 +21,13 @@ import {
   OpticalSenderView,
   OpticalReceiverView,
   bytesToBase64,
+  base64ToBytes,
   gzipCodec,
   DEFAULT_CODECS,
 } from "@optical-transfer/react-native";
+import { launchImageLibrary } from "react-native-image-picker";
 import { SAMPLES, type Sample, type SampleGroup } from "./samples";
-import { decodeEnvelope, type Envelope } from "./payload";
+import { encodeEnvelope, decodeEnvelope, type Envelope } from "./payload";
 import { utf8Decode } from "./util";
 
 type Role = "menu" | "send" | "receive";
@@ -45,6 +47,43 @@ export default function App() {
   const [active, setActive] = useState<{ sample: Sample; bytes: Uint8Array } | null>(null);
   const [received, setReceived] = useState<Envelope | null>(null);
   const [recvError, setRecvError] = useState<string | null>(null);
+  const [pickError, setPickError] = useState<string | null>(null);
+
+  // Pick a real photo from the library and queue it for sending. We cap the
+  // dimensions so a full-res photo doesn't turn into a multi-minute transfer;
+  // the resulting byte count is shown on the broadcast screen.
+  async function pickPhoto() {
+    setPickError(null);
+    try {
+      const res = await launchImageLibrary({
+        mediaType: "photo",
+        includeBase64: true,
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.6,
+      });
+      if (res.didCancel) return;
+      if (res.errorCode) {
+        setPickError(res.errorMessage ?? res.errorCode);
+        return;
+      }
+      const asset = res.assets?.[0];
+      if (!asset?.base64) {
+        setPickError("no image data returned");
+        return;
+      }
+      const mime = asset.type ?? "image/jpeg";
+      const name = asset.fileName ?? "photo.jpg";
+      const data = base64ToBytes(asset.base64);
+      const bytes = encodeEnvelope({ mime, name, data });
+      setActive({
+        sample: { key: "photo", label: name, group: "Media", hint: mime, build: () => bytes },
+        bytes,
+      });
+    } catch (e) {
+      setPickError(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   // ---- SEND -----------------------------------------------------------------
   if (role === "send") {
@@ -63,6 +102,17 @@ export default function App() {
         <Header title="Send" onBack={() => setRole("menu")} />
         <ScrollView contentContainerStyle={styles.menuScroll}>
           <SettingsPanel settings={settings} onChange={setSettings} />
+
+          <Text style={styles.groupHeader}>Your device</Text>
+          <TouchableOpacity style={styles.row} onPress={pickPhoto}>
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Pick a photo…</Text>
+              <Text style={styles.rowHint}>send a real image from your library</Text>
+            </View>
+            <Text style={styles.chev}>›</Text>
+          </TouchableOpacity>
+          {pickError && <Text style={styles.errorLine}>⚠ {pickError}</Text>}
+
           {GROUPS.map((group) => (
             <View key={group}>
               <Text style={styles.groupHeader}>{group}</Text>

@@ -1409,6 +1409,28 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
+  - react-native-image-picker (8.2.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - React-NativeModulesApple (0.85.0):
     - hermes-engine
     - React-callinvoker
@@ -1908,6 +1930,7 @@ DEPENDENCIES:
   - React-logger (from `../../../../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../../../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-image-picker (from `../../../../node_modules/react-native-image-picker`)
   - React-NativeModulesApple (from `../../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../../../../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../../../../node_modules/react-native/ReactCommon/oscompat`)
@@ -2028,6 +2051,8 @@ EXTERNAL SOURCES:
     :path: "../../../../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-image-picker:
+    :path: "../../../../node_modules/react-native-image-picker"
   React-NativeModulesApple:
     :path: "../../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -2144,6 +2169,7 @@ SPEC CHECKSUMS:
   React-logger: ee47d5f3b59a46a006c65038ed5d0b1143e37510
   React-Mapbuffer: 7f8bfbe3fcb2203db4ccb3975414af8cabe4bcd0
   React-microtasksnativemodule: ca1f33f7c98b76d923f550d39631eb4e05fa9aec
+  react-native-image-picker: 23540feacc79c63c60857f318fdfa8477c26e70a
   React-NativeModulesApple: 9c1f8815ebd72cc1c75587fe588513f6dd9cb708
   React-networking: 8f75f882c6794e91e28b458b5bc1461034098c80
   React-oscompat: 5361d0fa7905ba1c3b3c5e7c464d6be9d2d85f4b

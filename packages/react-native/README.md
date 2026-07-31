@@ -91,6 +91,9 @@ The example is a small **test bench**:
 - **Media types** — Text, JSON, Image, URL, Contact (vCard). The receiver renders
   each by MIME: text/JSON as text, images re-appear as images, unknown binary as a
   hex dump.
+- **Your own photos** — "Pick a photo…" pulls a real image from the library
+  (`react-native-image-picker`, capped to 800 px so the transfer stays reasonable)
+  and sends it with its real MIME type.
 - **Stress payloads** — large compressible text and 5 KB / 25 KB *incompressible*
   random blobs, to actually exercise the fountain codes (hundreds of frames,
   dropped-frame recovery, real transfer time).
