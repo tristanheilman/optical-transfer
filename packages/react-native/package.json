@@ -31,7 +31,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@optical-transfer/core": "*"
+    "@optical-transfer/core": "*",
+    "pako": "^2.1.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@react-native/babel-preset": "0.85.0",
+    "@types/pako": "^2.0.3",
     "@types/react": "^19.2.0",
     "react": "19.2.3",
     "react-native": "0.85.0",

@@ -7,6 +7,11 @@
 export { OpticalSender, DEFAULT_BLOCK_LEN } from "./sender";
 export type { SenderOptions } from "./sender";
 export { OpticalReceiver } from "./receiver";
+export type { ReceiverOptions } from "./receiver";
+
+// Optional payload compression (pluggable — core ships no codec itself).
+export { wrapPayload, unwrapPayload, CODEC_IDENTITY } from "./codec";
+export type { PayloadCodec } from "./codec";
 
 // Low-level building blocks, exported for advanced use and testing.
 export { LTEncoder, LTDecoder } from "./fountain";

@@ -7,15 +7,27 @@
 
 import { LTDecoder } from "./fountain";
 import { fnv1a, parseFrame, type FrameHeader } from "./protocol";
+import { unwrapPayload, type PayloadCodec } from "./codec";
 
 /** Overhead factor: expect to need ~k·1.15 distinct frames to solve. */
 const OVERHEAD = 1.15;
 
+export interface ReceiverOptions {
+  /** Codecs available to reverse a compressed/transformed payload envelope. */
+  codecs?: readonly PayloadCodec[];
+}
+
 export class OpticalReceiver {
+  private readonly codecs?: readonly PayloadCodec[];
   private decoder: LTDecoder | null = null;
   private _header: FrameHeader | null = null;
   private _result: Uint8Array | null = null;
   private _done = false;
+  private _error: string | null = null;
+
+  constructor(opts: ReceiverOptions = {}) {
+    this.codecs = opts.codecs;
+  }
 
   /** Header of the stream currently being received, if locked on. */
   get header(): FrameHeader | null {
@@ -35,6 +47,12 @@ export class OpticalReceiver {
   /** Count of distinct frames accepted for the current session. */
   get framesReceived(): number {
     return this.decoder?.framesNew ?? 0;
+  }
+
+  /** Set if the payload was solved but its codec envelope could not be reversed
+   * (e.g. it was compressed and no matching codec was provided). */
+  get error(): string | null {
+    return this._error;
   }
 
   /** 0..1 progress. Frames-collected, not blocks-solved: LT peeling back-loads
@@ -58,16 +76,22 @@ export class OpticalReceiver {
       this.decoder = new LTDecoder(header.k, header.blockLen, header.sessionId, header.totalLen);
       this._result = null;
       this._done = false;
+      this._error = null;
     }
 
     if (this._done) return;
     this.decoder!.addFrame(header.seq, block);
 
     if (this.decoder!.isComplete) {
-      const out = this.decoder!.assemble();
-      if (out && fnv1a(out) === this._header!.payloadFnv) {
-        this._result = out;
-        this._done = true;
+      const wrapped = this.decoder!.assemble();
+      if (wrapped && fnv1a(wrapped) === this._header!.payloadFnv) {
+        try {
+          this._result = unwrapPayload(wrapped, this.codecs);
+          this._done = true;
+        } catch (e) {
+          // Payload solved and intact, but we can't reverse its codec envelope.
+          this._error = e instanceof Error ? e.message : String(e);
+        }
       }
       // If the checksum fails, keep ingesting: more frames can still correct
       // a corrupted block (should be vanishingly rare given QR's own ECC).
@@ -80,5 +104,6 @@ export class OpticalReceiver {
     this._header = null;
     this._result = null;
     this._done = false;
+    this._error = null;
   }
 }

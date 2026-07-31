@@ -19,6 +19,8 @@ import {
 import {
   OpticalSenderView,
   OpticalReceiverView,
+  gzipCodec,
+  DEFAULT_CODECS,
 } from "@optical-transfer/react-native";
 
 type Role = "menu" | "send" | "receive";
@@ -81,9 +83,9 @@ export default function App() {
       <SafeAreaView style={styles.fill}>
         <Header title="Sending" onBack={() => setRole("menu")} />
         <View style={styles.center}>
-          <OpticalSenderView data={bytes} blockLen={128} fps={10} size={300} />
+          <OpticalSenderView data={bytes} codec={gzipCodec} blockLen={128} fps={10} size={300} />
           <Text style={styles.caption}>
-            {bytes.length} bytes · aim the other phone's camera here
+            {bytes.length} bytes (gzip'd) · aim the other phone's camera here
           </Text>
         </View>
       </SafeAreaView>
@@ -97,6 +99,7 @@ export default function App() {
         {received == null ? (
           <OpticalReceiverView
             style={styles.fill}
+            codecs={DEFAULT_CODECS}
             onComplete={(data) => setReceived(utf8Decode(data))}
           />
         ) : (

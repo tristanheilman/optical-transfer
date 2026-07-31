@@ -7,12 +7,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { OpticalSender } from "@optical-transfer/core";
+import { OpticalSender, type PayloadCodec } from "@optical-transfer/core";
 import { bytesToBase64 } from "./base64";
 
 export interface OpticalSenderViewProps {
   /** The file/payload to broadcast. */
   data: Uint8Array;
+  /** Optional payload codec (e.g. `gzipCodec`) to compress before encoding. */
+  codec?: PayloadCodec;
   /** Payload bytes per frame. Smaller = sparser (easier-to-scan) QR codes. Default 128. */
   blockLen?: number;
   /** Frames displayed per second. Default 10. */
@@ -30,6 +32,7 @@ export interface OpticalSenderViewProps {
 
 export function OpticalSenderView({
   data,
+  codec,
   blockLen = 128,
   fps = 10,
   size = 300,
@@ -39,8 +42,8 @@ export function OpticalSenderView({
   onReady,
 }: OpticalSenderViewProps) {
   const sender = useMemo(
-    () => new OpticalSender(data, { blockLen, sessionId }),
-    [data, blockLen, sessionId],
+    () => new OpticalSender(data, { blockLen, sessionId, codec }),
+    [data, blockLen, sessionId, codec],
   );
 
   useEffect(() => {

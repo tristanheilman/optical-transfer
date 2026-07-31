@@ -40,6 +40,21 @@ import {
 Frames are carried as **base64 text** inside each QR so any scanner round-trips
 them exactly (no custom native frame processor needed), at ~33% density cost.
 
+### Compression (optional)
+
+Compress the payload before it becomes QR frames — fewer blocks, faster transfer:
+
+```tsx
+import { OpticalSenderView, OpticalReceiverView, gzipCodec, DEFAULT_CODECS }
+  from '@optical-transfer/react-native';
+
+<OpticalSenderView data={fileBytes} codec={gzipCodec} />
+<OpticalReceiverView codecs={DEFAULT_CODECS} onComplete={save} />
+```
+
+`gzipCodec` is pako-backed; compression is auto-skipped when it wouldn't help. Pass a stable
+`codecs` reference (like `DEFAULT_CODECS`) so the receiver isn't recreated each render.
+
 ### API
 
 - **`<OpticalSenderView data blockLen? fps? size? sessionId? ecl? onReady? />`**

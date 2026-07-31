@@ -4,8 +4,23 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import * as zlib from "node:zlib";
 
-import { OpticalSender, OpticalReceiver, fnv1a, splitmix32 } from "../src/index.ts";
+import {
+  OpticalSender,
+  OpticalReceiver,
+  fnv1a,
+  splitmix32,
+  wrapPayload,
+  type PayloadCodec,
+} from "../src/index.ts";
+
+/** A gzip/deflate codec for tests, backed by Node's zlib (id shared 1:1). */
+const deflateCodec: PayloadCodec = {
+  id: 1,
+  encode: (b) => new Uint8Array(zlib.deflateRawSync(b)),
+  decode: (b) => new Uint8Array(zlib.inflateRawSync(b)),
+};
 
 /** Deterministic pseudo-random bytes, so failures reproduce. */
 function makeData(len: number, seed: number): Uint8Array {
@@ -59,13 +74,46 @@ test("round-trips a 4 KB file through 30% loss and reordering", () => {
   assert.deepEqual(rx.result, file);
 });
 
-test("reconstructed file matches the sender's FNV checksum", () => {
+test("reconstructs the exact original; header checksum covers the wire payload", () => {
   const file = makeData(10_000, 99);
   const tx = new OpticalSender(file, { sessionId: 0x1234 });
   const { rx } = transfer(file, { seed: 3 });
   assert.ok(rx.result);
-  assert.equal(fnv1a(rx.result!), tx.header.payloadFnv);
+  assert.deepEqual(rx.result, file);
   assert.equal(rx.result!.length, file.length);
+  // The header FNV is over the wrapped (1-byte envelope) payload, not the raw file.
+  assert.equal(fnv1a(wrapPayload(file)), tx.header.payloadFnv);
+});
+
+test("compression: compressible payload needs fewer blocks and round-trips exactly", () => {
+  const file = new TextEncoder().encode("the quick brown fox ".repeat(2000));
+  const plain = new OpticalSender(file, { sessionId: 1, blockLen: 128 });
+  const zipped = new OpticalSender(file, { sessionId: 1, blockLen: 128, codec: deflateCodec });
+  assert.ok(zipped.k < plain.k, `compressed k (${zipped.k}) should be < plain k (${plain.k})`);
+
+  const rx = new OpticalReceiver({ codecs: [deflateCodec] });
+  for (let seq = 0; !rx.isComplete; seq++) rx.ingest(zipped.frame(seq));
+  assert.deepEqual(rx.result, file);
+});
+
+test("compression: incompressible payload falls back to identity (never inflates)", () => {
+  const file = makeData(4096, 7); // random → incompressible
+  const zipped = new OpticalSender(file, { sessionId: 2, blockLen: 128, codec: deflateCodec });
+  const plain = new OpticalSender(file, { sessionId: 2, blockLen: 128 });
+  assert.equal(zipped.k, plain.k, "should skip compression when it does not help");
+  const rx = new OpticalReceiver({ codecs: [deflateCodec] });
+  for (let seq = 0; !rx.isComplete; seq++) rx.ingest(zipped.frame(seq));
+  assert.deepEqual(rx.result, file);
+});
+
+test("compression: receiver without the codec reports an error, not wrong bytes", () => {
+  const file = new TextEncoder().encode("compress me ".repeat(500));
+  const zipped = new OpticalSender(file, { sessionId: 3, blockLen: 128, codec: deflateCodec });
+  const rx = new OpticalReceiver(); // no codecs registered
+  for (let seq = 0; seq < 5000 && !rx.isComplete && !rx.error; seq++) rx.ingest(zipped.frame(seq));
+  assert.equal(rx.isComplete, false);
+  assert.equal(rx.result, null);
+  assert.ok(rx.error && rx.error.includes("codec"), `expected a codec error, got: ${rx.error}`);
 });
 
 test("handles a range of sizes and block lengths", () => {

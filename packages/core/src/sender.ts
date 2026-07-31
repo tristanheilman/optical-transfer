@@ -7,12 +7,19 @@
 
 import { LTEncoder } from "./fountain";
 import { fnv1a, packFrame, type FrameHeader } from "./protocol";
+import { wrapPayload, type PayloadCodec } from "./codec";
 
 export interface SenderOptions {
   /** Payload bytes per frame (excludes the 20-byte header). Default 256. */
   blockLen?: number;
   /** 16-bit id identifying this transfer. Random per sender if omitted. */
   sessionId?: number;
+  /**
+   * Optional payload codec (e.g. gzip). Applied to the whole file before
+   * fountain-encoding, and only if it shrinks the payload. The receiver needs
+   * a codec with the same id to reverse it.
+   */
+  codec?: PayloadCodec;
 }
 
 /** Default payload size per QR frame — a balance of QR density vs. throughput. */
@@ -37,14 +44,17 @@ export class OpticalSender {
       throw new Error(`OpticalSender: blockLen must be 1..65535, got ${blockLen}`);
     }
     const sessionId = (opts.sessionId ?? randomSessionId()) & 0xffff;
-    this.encoder = new LTEncoder(file, blockLen, sessionId);
+    // Wrap once (envelope + optional compression); the transport carries the
+    // wrapped bytes, so totalLen/checksum are computed over them.
+    const wrapped = wrapPayload(file, opts.codec);
+    this.encoder = new LTEncoder(wrapped, blockLen, sessionId);
     this.header = {
       sessionId,
       seq: 0,
       k: this.encoder.k,
       blockLen,
-      totalLen: file.length,
-      payloadFnv: fnv1a(file),
+      totalLen: wrapped.length,
+      payloadFnv: fnv1a(wrapped),
     };
   }
 

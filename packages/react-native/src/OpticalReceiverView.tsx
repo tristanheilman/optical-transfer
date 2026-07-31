@@ -21,12 +21,16 @@ import {
   usePreviewOutput,
 } from "react-native-vision-camera";
 import { useOpticalReceiver } from "./useOpticalReceiver";
+import type { PayloadCodec } from "@optical-transfer/core";
 
 export interface OpticalReceiverViewProps {
   /** Fires once, with the reconstructed file, on verified completion. */
   onComplete?: (data: Uint8Array) => void;
   /** Fires on every progress change (0..1). */
   onProgress?: (progress: number, framesReceived: number) => void;
+  /** Codecs to reverse a compressed payload (e.g. `DEFAULT_CODECS`). Pass a
+   * stable reference so the receiver isn't recreated each render. */
+  codecs?: readonly PayloadCodec[];
   /** Hide the built-in status overlay. */
   hideOverlay?: boolean;
   style?: ViewStyle;
@@ -35,13 +39,14 @@ export interface OpticalReceiverViewProps {
 export function OpticalReceiverView({
   onComplete,
   onProgress,
+  codecs,
   hideOverlay,
   style,
 }: OpticalReceiverViewProps) {
   const device = useCameraDevice("back");
   const { hasPermission, requestPermission } = useCameraPermission();
-  const { progress, isComplete, result, framesReceived, ingestBase64 } =
-    useOpticalReceiver();
+  const { progress, isComplete, result, framesReceived, error, ingestBase64 } =
+    useOpticalReceiver(codecs);
 
   // Camera outputs: a preview to render, and a QR object scanner.
   const preview = usePreviewOutput();
@@ -92,9 +97,11 @@ export function OpticalReceiverView({
       {!hideOverlay && (
         <View style={styles.overlay} pointerEvents="none">
           <Text style={styles.status}>
-            {isComplete
-              ? "✓ Transfer complete"
-              : `Receiving… ${Math.round(progress * 100)}%  (${framesReceived} frames)`}
+            {error
+              ? `⚠ ${error}`
+              : isComplete
+                ? "✓ Transfer complete"
+                : `Receiving… ${Math.round(progress * 100)}%  (${framesReceived} frames)`}
           </Text>
         </View>
       )}

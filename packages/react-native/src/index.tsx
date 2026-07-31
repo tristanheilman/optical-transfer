@@ -15,6 +15,9 @@ export type { ReceiverState, UseOpticalReceiver } from "./useOpticalReceiver";
 
 export { bytesToBase64, base64ToBytes } from "./base64";
 
+// Optional gzip compression (pako-backed) for the payload.
+export { gzipCodec, DEFAULT_CODECS, GZIP_CODEC_ID } from "./gzipCodec";
+
 // Re-export the core essentials so app code needs a single import.
 export { OpticalSender, OpticalReceiver } from "@optical-transfer/core";
-export type { SenderOptions, FrameHeader } from "@optical-transfer/core";
+export type { SenderOptions, FrameHeader, PayloadCodec } from "@optical-transfer/core";

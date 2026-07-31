@@ -36,6 +36,12 @@ rx.result;                        // Uint8Array | null
   `k`, `header`.
 - **`OpticalReceiver()`** — `ingest(bytes)`, `progress`, `isComplete`, `result`,
   `framesReceived`, `header`, `reset()`.
+- **Optional compression** — `OpticalSender(file, { codec })` and
+  `new OpticalReceiver({ codecs })`. Core ships no codec (stays dependency-free); inject a
+  `PayloadCodec` (`{ id, encode, decode }`). A 1-byte envelope records which codec was used,
+  so the stream stays self-describing; compression is auto-skipped when it wouldn't shrink
+  the payload. Helpers: `wrapPayload` / `unwrapPayload`, `CODEC_IDENTITY`. The React Native
+  package provides a ready-made `gzipCodec`.
 - Low-level: `LTEncoder`, `LTDecoder`, `packFrame`, `parseFrame`, `fnv1a`, `splitmix32`,
   `HEADER_LEN`, `FrameHeader`.
 

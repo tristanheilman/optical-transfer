@@ -5,7 +5,7 @@
 // lifting (dedup, peeling, checksum) lives in @optical-transfer/core.
 
 import { useCallback, useMemo, useState } from "react";
-import { OpticalReceiver } from "@optical-transfer/core";
+import { OpticalReceiver, type PayloadCodec } from "@optical-transfer/core";
 import { base64ToBytes } from "./base64";
 
 export interface ReceiverState {
@@ -14,6 +14,8 @@ export interface ReceiverState {
   isComplete: boolean;
   result: Uint8Array | null;
   framesReceived: number;
+  /** Set if the payload solved but its codec envelope couldn't be reversed. */
+  error: string | null;
 }
 
 const EMPTY: ReceiverState = {
@@ -21,6 +23,7 @@ const EMPTY: ReceiverState = {
   isComplete: false,
   result: null,
   framesReceived: 0,
+  error: null,
 };
 
 export interface UseOpticalReceiver extends ReceiverState {
@@ -32,8 +35,12 @@ export interface UseOpticalReceiver extends ReceiverState {
   receiver: OpticalReceiver;
 }
 
-export function useOpticalReceiver(): UseOpticalReceiver {
-  const receiver = useMemo(() => new OpticalReceiver(), []);
+export function useOpticalReceiver(
+  codecs?: readonly PayloadCodec[],
+): UseOpticalReceiver {
+  // Pass a stable `codecs` reference (e.g. module-scope DEFAULT_CODECS) so the
+  // receiver isn't recreated on every render.
+  const receiver = useMemo(() => new OpticalReceiver({ codecs }), [codecs]);
   const [state, setState] = useState<ReceiverState>(EMPTY);
 
   const ingestBase64 = useCallback(
@@ -50,6 +57,7 @@ export function useOpticalReceiver(): UseOpticalReceiver {
         isComplete: receiver.isComplete,
         result: receiver.result,
         framesReceived: receiver.framesReceived,
+        error: receiver.error,
       });
     },
     [receiver],

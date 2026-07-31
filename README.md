@@ -80,8 +80,9 @@ renderer and scanner round-trip it exactly, at ~33% density cost.
 
 - First on-device run on iPhone (`pod install` → `run-ios --device`); iterate on any v5
   camera wiring issues it surfaces.
-- **Compress the payload before encoding** (gzip/deflate) so fewer blocks are needed —
-  a fewer-frames, faster-transfer win, borrowed from the prior art below.
+- ✅ **Done — compress the payload before encoding.** Optional, pluggable codecs (a 1-byte
+  self-describing envelope); the RN package ships a `gzipCodec` (pako). Fewer blocks →
+  faster transfer for compressible data; auto-skipped when it wouldn't help.
 - Optional filename/MIME metadata alongside the bytes (the core is currently a raw-byte
   transport with no filename).
 - Optionally swap the base64-over-text channel for a raw-bytes frame processor to recover
@@ -103,9 +104,10 @@ projects are worth knowing — both MIT licensed:
 The core difference is resilience: that project uses **naive indexed chunking** — the
 receiver must capture every specific chunk in a single pass, so a missed frame means starting
 over. This project uses **LT fountain codes**, so the receiver reconstructs from *any* ~k·1.15
-frames in any order and tolerates dropped frames without retransmission. The idea worth
-borrowing from it — **compressing the payload before encoding** — is on the list above. No
-code from that project is used here; it is acknowledged as independent prior art.
+frames in any order and tolerates dropped frames without retransmission. Its best idea —
+**compressing the payload before encoding** — we adopted: optional pluggable codecs with a
+`gzipCodec` on React Native (see [What's next](#whats-next)). No code from that project is
+used here; it is acknowledged as independent prior art.
 
 ## Attribution & license
 
