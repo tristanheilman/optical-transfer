@@ -1,10 +1,13 @@
 // OpticalReceiverView — camera capture side (react-native-vision-camera v5).
 //
 // v5 is a nitro rewrite: scanning is composed from camera "outputs" rather than
-// a single useCodeScanner hook. We attach a preview output (to show the camera)
-// and an object output scanning for "qr", then pipe every decoded value into
-// the fountain receiver. On verified completion, onComplete fires with the
-// reconstructed bytes.
+// a single useCodeScanner hook. The <Camera> convenience component already
+// creates its own preview output and wires it to the on-screen PreviewView
+// (see Camera's `outputs: [previewOutput, ...outputs]`), so we must NOT add a
+// second usePreviewOutput() — two preview outputs make the iOS AVCaptureSession
+// fail to start (black camera). We pass only an object output scanning for "qr"
+// and pipe every decoded value into the fountain receiver. On verified
+// completion, onComplete fires with the reconstructed bytes.
 //
 // Note: the code value is error-corrected text; we carry frames as base64 so it
 // round-trips exactly. Scanning is iOS-first in v5 (ScannedObject is @platform
@@ -18,7 +21,6 @@ import {
   useCameraDevice,
   useCameraPermission,
   useObjectOutput,
-  usePreviewOutput,
 } from "react-native-vision-camera";
 import { useOpticalReceiver } from "./useOpticalReceiver";
 import type { PayloadCodec } from "@optical-transfer/core";
@@ -48,8 +50,7 @@ export function OpticalReceiverView({
   const { progress, isComplete, result, framesReceived, error, ingestBase64 } =
     useOpticalReceiver(codecs);
 
-  // Camera outputs: a preview to render, and a QR object scanner.
-  const preview = usePreviewOutput();
+  // Camera outputs: just the QR object scanner. <Camera> adds its own preview.
   const objectOutput = useObjectOutput({
     types: ["qr"],
     onObjectsScanned: (objects) => {
@@ -92,7 +93,7 @@ export function OpticalReceiverView({
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={!isComplete}
-        outputs={[preview, objectOutput]}
+        outputs={[objectOutput]}
       />
       {!hideOverlay && (
         <View style={styles.overlay} pointerEvents="none">

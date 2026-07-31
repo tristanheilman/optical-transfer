@@ -23,7 +23,51 @@ can drop it in however they choose.
 | Package | Status | What it is |
 | --- | --- | --- |
 | [`@optical-transfer/core`](packages/core) | ✅ working, tested | Pure, dependency-free transport: `OpticalSender`, `OpticalReceiver`, fountain codec + frame protocol. Runs on Node, browsers, and React Native (Hermes). |
-| [`@optical-transfer/react-native`](packages/react-native) | ✅ JS verified · ⚠️ device-validate | Sender/receiver components: animated byte-mode QR (`react-native-qrcode-svg`) + camera capture (`react-native-vision-camera` v5). Includes a bare-RN example app. Camera receiver needs on-device validation. |
+| [`@optical-transfer/react-native`](packages/react-native) | ✅ iOS device-validated | Sender/receiver components: animated byte-mode QR (`react-native-qrcode-svg`) + camera capture (`react-native-vision-camera` v5). Includes a bare-RN example app. Send + receive verified on real iPhones. |
+| [`@optical-transfer/gif`](packages/gif) | ✅ working, tested | Encode a file as a **shareable animated GIF** of QR frames, and decode a GIF back into the file — asynchronous, offline transfer. Powers the [web viewer](docs/viewer/index.html). |
+
+## The example app
+
+The repo ships a bare **React Native** example (`packages/react-native/example`) — a small
+test bench for the transport: pick a media type (or a real photo), tune the transport
+(compression, block size, fps), broadcast it as an animated QR stream, and watch another
+phone's camera rebuild it. Screens below are iOS (iPhone, iOS 26):
+
+<!--
+  DEMO — a screen-capture of a real two-device transfer (a Rick Astley clip sent
+  screen → camera). Add the file at docs/demo.mp4, then replace this comment with:
+  <p align="center">
+    <video src="docs/demo.mp4" controls width="640" poster="docs/screenshots/03-sending.png"></video>
+    <br><sub>A real transfer: one phone broadcasts an animated QR stream, the other's camera reconstructs the file — no network involved.</sub>
+  </p>
+-->
+
+<table>
+  <tr>
+    <td align="center" width="20%"><img src="docs/screenshots/01-menu.png" width="150"><br><sub><b>Menu</b><br>send or receive</sub></td>
+    <td align="center" width="20%"><img src="docs/screenshots/02-send.png" width="150"><br><sub><b>Send</b><br>pick content · tune transport</sub></td>
+    <td align="center" width="20%"><img src="docs/screenshots/03-sending.png" width="150"><br><sub><b>Broadcasting</b><br>animated QR stream</sub></td>
+    <td align="center" width="20%"><img src="docs/screenshots/04-recv-image.png" width="150"><br><sub><b>Received image</b><br>rebuilt from frames</sub></td>
+    <td align="center" width="20%"><img src="docs/screenshots/05-recv-text.png" width="150"><br><sub><b>Received text</b><br>verified & rendered</sub></td>
+  </tr>
+</table>
+
+**Platforms:** iOS is device-validated end-to-end (send + receive). On **Android**, the
+**send** side (animated QR display) works today; **receive** (QR scanning) is iOS-first in
+Vision Camera v5 and is on the roadmap. See
+[running the example](packages/react-native#running-the-example-app-ios).
+
+## Shareable GIF transfer
+
+Beyond the live screen→camera channel, a file can be packed into a **shareable
+animated GIF** of QR frames ([`@optical-transfer/gif`](packages/gif)). This makes
+transfer **asynchronous** — post the GIF anywhere and anyone reconstructs the file,
+no two devices in a room. Because the frames are generated (not filmed), decode is
+near-perfect, and fountain coding still tolerates a few frames mangled by re-encoding.
+
+- **Make a GIF** on a phone (Share as GIF) or in the browser.
+- **Decode a GIF** with the self-contained **[web viewer](docs/viewer/index.html)** —
+  drop a GIF, get the file back; nothing is uploaded, it all runs client-side.
 
 ## Core API
 
@@ -68,8 +112,9 @@ verification, and overhead bounds.
   protocol. Unit-tested over a simulated lossy/reordered channel; builds clean.
 - ✅ **React Native layer** — sender/receiver components + example app. Typechecks against
   the real native libs and the example bundles under Metro.
-- ⚠️ **On-device iOS run** — not yet validated on hardware. The camera receiver targets
-  Vision Camera **v5** (new nitro API) and needs a first device run to confirm the wiring.
+- ✅ **On-device iOS** — validated end-to-end on real iPhones (iOS 26 and iOS 16): the
+  animated-QR sender and the Vision Camera **v5** receiver reconstruct files screen → camera.
+- 🟡 **Android send** — the animated-QR sender is cross-platform and works on Android.
 - ⏳ **Android receive** — v5 QR scanning is iOS-first; a fallback is future work.
 
 The binary-safe QR round-trip (the original sharp edge — scanners hand back UTF-8, not raw
@@ -78,13 +123,15 @@ renderer and scanner round-trip it exactly, at ~33% density cost.
 
 ### What's next
 
-- First on-device run on iPhone (`pod install` → `run-ios --device`); iterate on any v5
-  camera wiring issues it surfaces.
+- ✅ **Done — on-device iOS.** Sender + Vision Camera v5 receiver validated on real iPhones
+  (iOS 26 and iOS 16); the example app ships a QR/optical-themed icon.
 - ✅ **Done — compress the payload before encoding.** Optional, pluggable codecs (a 1-byte
   self-describing envelope); the RN package ships a `gzipCodec` (pako). Fewer blocks →
   faster transfer for compressible data; auto-skipped when it wouldn't help.
-- Optional filename/MIME metadata alongside the bytes (the core is currently a raw-byte
-  transport with no filename).
+- Android **receive** (a QR-scanning path that isn't v5-iOS-only) — the sender already
+  works cross-platform.
+- Optional filename/MIME metadata in **core** (the example already layers its own
+  `mime\nfilename\nbytes` envelope on top; see `example/src/payload.ts`).
 - Optionally swap the base64-over-text channel for a raw-bytes frame processor to recover
   the ~33% density and push throughput.
 

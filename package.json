@@ -5,6 +5,7 @@
   "description": "Air-gapped file transfer over screen and camera, using LT fountain codes and animated QR frames.",
   "workspaces": [
     "packages/core",
+    "packages/gif",
     "packages/react-native",
     "packages/react-native/example"
   ],

@@ -86,13 +86,42 @@ To test a real transfer you need **two devices**: run the app on each, put one i
 **Send** and the other in **Receive**, and aim the receiver's camera at the
 sender's screen.
 
+The example is a small **test bench**:
+
+- **Media types** — Text, JSON, Image, URL, Contact (vCard). The receiver renders
+  each by MIME: text/JSON as text, images re-appear as images, unknown binary as a
+  hex dump.
+- **Your own photos** — "Pick a photo…" pulls a real image from the library
+  (`react-native-image-picker`, capped to 800 px so the transfer stays reasonable)
+  and sends it with its real MIME type.
+- **Stress payloads** — large compressible text and 5 KB / 25 KB *incompressible*
+  random blobs, to actually exercise the fountain codes (hundreds of frames,
+  dropped-frame recovery, real transfer time).
+- **Tuning knobs** — toggle gzip compression and pick block size (64/128/256) and
+  frame rate (5/10/15 fps) to compare transfer behavior.
+- **Share as GIF** — on the send screen, pack the payload into a shareable animated
+  QR GIF ([`@optical-transfer/gif`](../gif)) and open the OS share sheet. Anyone can
+  drop it into the [web viewer](../../docs/viewer/index.html) to reconstruct the
+  file — asynchronous transfer, no live camera session.
+
+Because core is a raw-byte transport, the example layers its own tiny envelope to
+carry type info — `mime\nfilename\nbytes` (see
+[`example/src/payload.ts`](example/src/payload.ts)). That's the intended pattern:
+apps add whatever metadata they need on top of the byte stream.
+
+### Screens
+
+See the [repository README](../../README.md#the-example-app) for a screenshot gallery
+of the example (menu, send + tuning, live QR, received image, received text).
+
 ## Status & caveats
 
 - ✅ Core transport, sender, base64 codec, and receiver hook are unit-verified;
   the example's full JS graph bundles cleanly under Metro.
-- ⚠️ The camera receiver is written against Vision Camera **v5** (a new nitro-based
-  API) and needs on-device validation — it has not been run on hardware here.
-- ⚠️ QR scanning in v5 is iOS-first (`ScannedObject` is `@platform iOS`).
+- ✅ The Vision Camera **v5** camera receiver is **validated on real iPhones**
+  (iOS 26 and iOS 16) — send + receive reconstruct files screen → camera.
+- ⚠️ QR scanning in v5 is iOS-first (`ScannedObject` is `@platform iOS`); the
+  sender works cross-platform, but Android receive is future work.
 - Throughput is bounded by how fast the scanner reads frames; for higher rates,
   a dedicated frame-processor plugin returning raw bytes could replace the
   base64-over-text channel.
