@@ -10,10 +10,10 @@
   ],
   "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
-  "homepage": "https://github.com/tristanheilman/optical-transfer#readme",
+  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tristanheilman/optical-transfer.git",
+    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git",
     "directory": "packages/react-native"
   },
   "keywords": [
