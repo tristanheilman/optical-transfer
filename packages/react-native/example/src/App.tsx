@@ -1,14 +1,18 @@
-// Example app: the smallest thing that shows the library working.
+// Example app: demonstrates transferring different *media types* over the
+// optical channel — plain text, JSON, and an image — screen → camera.
 //
 // Two roles on two devices:
-//   • SEND    — turns a sample payload into an animated QR stream.
-//   • RECEIVE — points the camera at another phone's screen and rebuilds it.
+//   • SEND    — pick a media type; it's wrapped in a self-describing envelope
+//               (mime + filename + bytes) and broadcast as an animated QR stream.
+//   • RECEIVE — points the camera at another phone's screen, rebuilds the bytes,
+//               reads the envelope, and renders text / JSON / image accordingly.
 //
-// Put one phone in SEND and another in RECEIVE, aim the camera at the screen,
-// and watch the progress climb to 100%.
+// The core transport carries only raw bytes; the mime/filename envelope
+// (see payload.ts) is an app-level concern layered on top.
 
 import React, { useMemo, useState } from "react";
 import {
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -19,122 +23,162 @@ import {
 import {
   OpticalSenderView,
   OpticalReceiverView,
+  bytesToBase64,
   gzipCodec,
   DEFAULT_CODECS,
 } from "@optical-transfer/react-native";
+import { SAMPLES, type Sample } from "./samples";
+import { decodeEnvelope, type Envelope } from "./payload";
+import { utf8Decode } from "./util";
 
 type Role = "menu" | "send" | "receive";
 
-// A recognizable, verifiable sample payload (~2 KB of UTF-8 text).
-function makeSamplePayload(): { bytes: Uint8Array; text: string } {
-  const lines: string[] = [
-    "optical-transfer demo payload",
-    "-----------------------------",
-  ];
-  for (let i = 0; i < 40; i++) {
-    lines.push(`line ${i.toString().padStart(3, "0")}: the quick brown fox jumps over the lazy dog`);
-  }
-  const text = lines.join("\n");
-  const bytes = utf8Encode(text);
-  return { bytes, text };
-}
-
-function utf8Encode(s: string): Uint8Array {
-  const out: number[] = [];
-  for (let i = 0; i < s.length; i++) {
-    let c = s.charCodeAt(i);
-    if (c < 0x80) out.push(c);
-    else if (c < 0x800) {
-      out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
-    } else {
-      out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
-    }
-  }
-  return new Uint8Array(out);
-}
-
-function utf8Decode(bytes: Uint8Array): string {
-  let s = "";
-  for (let i = 0; i < bytes.length; ) {
-    const b = bytes[i]!;
-    if (b < 0x80) {
-      s += String.fromCharCode(b);
-      i += 1;
-    } else if (b < 0xe0) {
-      s += String.fromCharCode(((b & 0x1f) << 6) | (bytes[i + 1]! & 0x3f));
-      i += 2;
-    } else {
-      s += String.fromCharCode(
-        ((b & 0x0f) << 12) | ((bytes[i + 1]! & 0x3f) << 6) | (bytes[i + 2]! & 0x3f),
-      );
-      i += 3;
-    }
-  }
-  return s;
-}
-
 export default function App() {
   const [role, setRole] = useState<Role>("menu");
-  const { bytes, text } = useMemo(makeSamplePayload, []);
-  const [received, setReceived] = useState<string | null>(null);
+  const [sample, setSample] = useState<Sample | null>(null);
+  const [received, setReceived] = useState<Envelope | null>(null);
+  const [recvError, setRecvError] = useState<string | null>(null);
 
+  // ---- SEND -----------------------------------------------------------------
   if (role === "send") {
-    return (
-      <SafeAreaView style={styles.fill}>
-        <Header title="Sending" onBack={() => setRole("menu")} />
-        <View style={styles.center}>
-          <OpticalSenderView data={bytes} codec={gzipCodec} blockLen={128} fps={10} size={300} />
-          <Text style={styles.caption}>
-            {bytes.length} bytes (gzip'd) · aim the other phone's camera here
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
+    if (!sample) {
+      return (
+        <SafeAreaView style={styles.fill}>
+          <Header title="Send — pick a type" onBack={() => setRole("menu")} />
+          <View style={styles.center}>
+            {SAMPLES.map((s) => (
+              <TouchableOpacity key={s.key} style={styles.button} onPress={() => setSample(s)}>
+                <Text style={styles.buttonText}>{s.label}</Text>
+                <Text style={styles.buttonHint}>{s.hint}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </SafeAreaView>
+      );
+    }
+    return <SendView sample={sample} onBack={() => setSample(null)} />;
   }
 
+  // ---- RECEIVE --------------------------------------------------------------
   if (role === "receive") {
     return (
       <SafeAreaView style={styles.fill}>
-        <Header title="Receiving" onBack={() => setRole("menu")} />
+        <Header
+          title="Receiving"
+          onBack={() => {
+            setReceived(null);
+            setRecvError(null);
+            setRole("menu");
+          }}
+        />
         {received == null ? (
           <OpticalReceiverView
             style={styles.fill}
             codecs={DEFAULT_CODECS}
-            onComplete={(data) => setReceived(utf8Decode(data))}
+            onComplete={(bytes) => {
+              try {
+                setReceived(decodeEnvelope(bytes));
+              } catch (e) {
+                setRecvError(e instanceof Error ? e.message : String(e));
+              }
+            }}
           />
         ) : (
-          <ScrollView contentContainerStyle={styles.resultBox}>
-            <Text style={styles.resultTitle}>✓ Received {received.length} chars</Text>
-            <Text style={styles.mono}>{received}</Text>
-          </ScrollView>
+          <ReceivedView
+            envelope={received}
+            onReset={() => {
+              setReceived(null);
+              setRecvError(null);
+            }}
+          />
         )}
+        {recvError && <Text style={styles.errorLine}>⚠ {recvError}</Text>}
       </SafeAreaView>
     );
   }
 
+  // ---- MENU -----------------------------------------------------------------
   return (
     <SafeAreaView style={styles.fill}>
       <View style={styles.center}>
         <Text style={styles.title}>optical-transfer</Text>
         <Text style={styles.subtitle}>air-gapped file transfer · screen → camera</Text>
-        <TouchableOpacity style={styles.button} onPress={() => setRole("send")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            setSample(null);
+            setRole("send");
+          }}
+        >
           <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.buttonAlt]}
           onPress={() => {
             setReceived(null);
+            setRecvError(null);
             setRole("receive");
           }}
         >
           <Text style={styles.buttonText}>Receive</Text>
         </TouchableOpacity>
-        <Text style={styles.caption} numberOfLines={1}>
-          sample: “{text.slice(0, 28)}…”
+        <Text style={styles.caption}>text · json · image</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+// Sends one sample as an animated, gzip-compressed QR stream.
+function SendView({ sample, onBack }: { sample: Sample; onBack: () => void }) {
+  const bytes = useMemo(() => sample.build(), [sample]);
+  return (
+    <SafeAreaView style={styles.fill}>
+      <Header title={`Sending ${sample.label}`} onBack={onBack} />
+      <View style={styles.center}>
+        <OpticalSenderView data={bytes} codec={gzipCodec} blockLen={128} fps={10} size={300} />
+        <Text style={styles.caption}>
+          {sample.label} · {bytes.length} bytes (gzip'd) · aim the other phone's camera here
         </Text>
       </View>
     </SafeAreaView>
   );
+}
+
+// Renders a reconstructed envelope by its MIME type.
+function ReceivedView({ envelope, onReset }: { envelope: Envelope; onReset: () => void }) {
+  const { mime, name, data } = envelope;
+  return (
+    <ScrollView contentContainerStyle={styles.resultBox}>
+      <Text style={styles.resultTitle}>✓ Received {data.length} bytes</Text>
+      <Text style={styles.metaLine}>
+        {name} · {mime}
+      </Text>
+
+      {mime.startsWith("image/") ? (
+        <Image
+          source={{ uri: `data:${mime};base64,${bytesToBase64(data)}` }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      ) : mime === "application/json" || mime.startsWith("text/") ? (
+        <Text style={styles.mono}>{utf8Decode(data)}</Text>
+      ) : (
+        <Text style={styles.mono}>{hexPreview(data)}</Text>
+      )}
+
+      <TouchableOpacity style={[styles.button, styles.buttonAlt]} onPress={onReset}>
+        <Text style={styles.buttonText}>Receive another</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+function hexPreview(data: Uint8Array): string {
+  const n = Math.min(data.length, 256);
+  let s = "";
+  for (let i = 0; i < n; i++) s += data[i]!.toString(16).padStart(2, "0") + (i % 16 === 15 ? "\n" : " ");
+  if (data.length > n) s += `\n… (+${data.length - n} more bytes)`;
+  return s;
 }
 
 function Header({ title, onBack }: { title: string; onBack: () => void }) {
@@ -156,15 +200,16 @@ const styles = StyleSheet.create({
   subtitle: { color: "#9aa0aa", fontSize: 14, marginTop: 6, marginBottom: 40 },
   button: {
     backgroundColor: "#3b82f6",
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 48,
     borderRadius: 12,
     marginTop: 16,
-    minWidth: 220,
+    minWidth: 240,
     alignItems: "center",
   },
   buttonAlt: { backgroundColor: "#10b981" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  buttonHint: { color: "#dbeafe", fontSize: 12, marginTop: 4 },
   caption: { color: "#9aa0aa", fontSize: 13, marginTop: 20, textAlign: "center" },
   header: {
     flexDirection: "row",
@@ -175,7 +220,21 @@ const styles = StyleSheet.create({
   back: { color: "#3b82f6", fontSize: 17 },
   headerTitle: { color: "#fff", fontSize: 17, fontWeight: "700", flex: 1, textAlign: "center" },
   headerSpacer: { width: 48 },
-  resultBox: { padding: 20 },
-  resultTitle: { color: "#10b981", fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  mono: { color: "#e5e7eb", fontFamily: "Courier", fontSize: 12 },
+  resultBox: { padding: 20, alignItems: "center" },
+  resultTitle: { color: "#10b981", fontSize: 18, fontWeight: "700", marginBottom: 4 },
+  metaLine: { color: "#9aa0aa", fontSize: 13, marginBottom: 16 },
+  mono: { color: "#e5e7eb", fontFamily: "Courier", fontSize: 12, alignSelf: "stretch" },
+  image: {
+    width: 240,
+    height: 240,
+    borderRadius: 12,
+    backgroundColor: "#000",
+    marginVertical: 8,
+  },
+  errorLine: {
+    color: "#f87171",
+    fontSize: 13,
+    textAlign: "center",
+    paddingVertical: 8,
+  },
 });
