@@ -2,11 +2,6 @@ MIT License
 
 Copyright (c) 2026 Tristan Heilman
 
-Portions of this software (the LT fountain codec and frame protocol in
-packages/core/src/fountain.ts and packages/core/src/protocol.ts) are derived
-from decimen-optical-transfer, Copyright (c) 2026 BashAlarmist, and are used
-under the MIT License. See THIRD-PARTY-NOTICES.md for the full upstream notice.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
