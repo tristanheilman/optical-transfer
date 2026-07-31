@@ -86,12 +86,21 @@ To test a real transfer you need **two devices**: run the app on each, put one i
 **Send** and the other in **Receive**, and aim the receiver's camera at the
 sender's screen.
 
-The example demonstrates **multiple media types** — pick **Text**, **JSON**, or
-**Image** on the Send side and the Receive side renders each appropriately (the
-image re-appears on the other phone). Because core is a raw-byte transport, the
-example layers its own tiny envelope to carry type info — `mime\nfilename\nbytes`
-(see [`example/src/payload.ts`](example/src/payload.ts)). That's the intended
-pattern: apps add whatever metadata they need on top of the byte stream.
+The example is a small **test bench**:
+
+- **Media types** — Text, JSON, Image, URL, Contact (vCard). The receiver renders
+  each by MIME: text/JSON as text, images re-appear as images, unknown binary as a
+  hex dump.
+- **Stress payloads** — large compressible text and 5 KB / 25 KB *incompressible*
+  random blobs, to actually exercise the fountain codes (hundreds of frames,
+  dropped-frame recovery, real transfer time).
+- **Tuning knobs** — toggle gzip compression and pick block size (64/128/256) and
+  frame rate (5/10/15 fps) to compare transfer behavior.
+
+Because core is a raw-byte transport, the example layers its own tiny envelope to
+carry type info — `mime\nfilename\nbytes` (see
+[`example/src/payload.ts`](example/src/payload.ts)). That's the intended pattern:
+apps add whatever metadata they need on top of the byte stream.
 
 ## Status & caveats
 
