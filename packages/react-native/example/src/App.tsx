@@ -9,6 +9,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Image,
+  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -17,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { WebView } from "react-native-webview";
 import {
   OpticalSenderView,
   OpticalReceiverView,
@@ -307,6 +309,8 @@ function ReceivedView({ envelope, onReset }: { envelope: Envelope; onReset: () =
   const { mime, name, data } = envelope;
   const isImage = mime.startsWith("image/");
   const isText = mime === "application/json" || mime.startsWith("text/");
+  const decoded = isText ? utf8Decode(data) : null;
+  const url = decoded != null ? extractUrl(mime, decoded) : null;
   return (
     <ScrollView contentContainerStyle={styles.resultBox}>
       <Text style={styles.resultTitle}>✓ Received {data.length.toLocaleString()} bytes</Text>
@@ -320,8 +324,10 @@ function ReceivedView({ envelope, onReset }: { envelope: Envelope; onReset: () =
           style={styles.image}
           resizeMode="contain"
         />
-      ) : isText ? (
-        <Text style={styles.mono}>{utf8Decode(data)}</Text>
+      ) : url ? (
+        <UrlView url={url} />
+      ) : decoded != null ? (
+        <Text style={styles.mono}>{decoded}</Text>
       ) : (
         <Text style={styles.mono}>{hexPreview(data)}</Text>
       )}
@@ -331,6 +337,46 @@ function ReceivedView({ envelope, onReset }: { envelope: Envelope; onReset: () =
       </TouchableOpacity>
     </ScrollView>
   );
+}
+
+// A received URL: a tappable link, plus an inline player if it's a YouTube link.
+function UrlView({ url }: { url: string }) {
+  const yt = youtubeId(url);
+  return (
+    <View style={styles.urlBox}>
+      <Text style={styles.link} onPress={() => Linking.openURL(url)}>
+        {url}
+      </Text>
+      {yt && (
+        <View style={styles.player}>
+          <WebView
+            source={{ uri: `https://www.youtube.com/embed/${yt}?playsinline=1&autoplay=1` }}
+            style={styles.fill}
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+          />
+        </View>
+      )}
+    </View>
+  );
+}
+
+// Pull the first URL out of a text/uri-list, or a body that is itself a URL.
+function extractUrl(mime: string, text: string): string | null {
+  if (mime === "text/uri-list") {
+    for (const line of text.split(/\r?\n/)) {
+      const t = line.trim();
+      if (t && !t.startsWith("#") && /^https?:\/\//i.test(t)) return t;
+    }
+    return null;
+  }
+  const t = text.trim();
+  return /^https?:\/\/\S+$/i.test(t) ? t : null;
+}
+
+function youtubeId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/);
+  return m ? m[1]! : null;
 }
 
 function hexPreview(data: Uint8Array): string {
@@ -428,6 +474,21 @@ const styles = StyleSheet.create({
   resultTitle: { color: "#10b981", fontSize: 18, fontWeight: "700", marginBottom: 4 },
   metaLine: { color: "#9aa0aa", fontSize: 13, marginBottom: 16 },
   mono: { color: "#e5e7eb", fontFamily: "Courier", fontSize: 12, alignSelf: "stretch" },
+  urlBox: { alignSelf: "stretch", alignItems: "center" },
+  link: {
+    color: "#3b82f6",
+    fontSize: 15,
+    textAlign: "center",
+    textDecorationLine: "underline",
+    marginBottom: 16,
+  },
+  player: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#000",
+  },
   image: {
     width: 240,
     height: 240,

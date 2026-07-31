@@ -46,7 +46,8 @@ const JSON_BODY = JSON.stringify(
   2,
 );
 
-const URL_BODY = "https://github.com/tristanheilman/react-native-optical-transfer\n";
+// A URL payload — the receiver plays it inline if it's a YouTube link. 🎵
+const URL_BODY = "https://www.youtube.com/watch?v=dQw4w9WgXcQ\n";
 
 const VCARD_BODY = [
   "BEGIN:VCARD",
@@ -113,9 +114,9 @@ export const SAMPLES: Sample[] = [
   },
   {
     key: "url",
-    label: "URL",
+    label: "URL (video)",
     group: "Media",
-    hint: "text/uri-list",
+    hint: "text/uri-list · plays inline",
     build: () =>
       encodeEnvelope({ mime: "text/uri-list", name: "link.uri", data: utf8Encode(URL_BODY) }),
   },
