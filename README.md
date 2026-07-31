@@ -80,8 +80,32 @@ renderer and scanner round-trip it exactly, at ~33% density cost.
 
 - First on-device run on iPhone (`pod install` → `run-ios --device`); iterate on any v5
   camera wiring issues it surfaces.
+- **Compress the payload before encoding** (gzip/deflate) so fewer blocks are needed —
+  a fewer-frames, faster-transfer win, borrowed from the prior art below.
+- Optional filename/MIME metadata alongside the bytes (the core is currently a raw-byte
+  transport with no filename).
 - Optionally swap the base64-over-text channel for a raw-bytes frame processor to recover
   the ~33% density and push throughput.
+
+## Prior art & related work
+
+Air-gapped QR file transfer is an idea several people have reached independently. Two
+projects are worth knowing — both MIT licensed:
+
+- **[decimen-optical-transfer](https://github.com/bashalarmistalt/decimen-optical-transfer)**
+  — the proof-of-concept this project's fountain codec and frame protocol are *derived from*
+  (see [Attribution](#attribution--license)).
+- **[mohankumarelec/airgapped-qr-code-transfer](https://github.com/mohankumarelec/airgapped-qr-code-transfer)**
+  — an earlier, independent web app (Vue) demonstrating the same screen → camera concept. It
+  gzip-compresses the file (`pako`), then streams fixed-size **indexed chunks** as sequential
+  QR codes and reassembles them by index.
+
+The core difference is resilience: that project uses **naive indexed chunking** — the
+receiver must capture every specific chunk in a single pass, so a missed frame means starting
+over. This project uses **LT fountain codes**, so the receiver reconstructs from *any* ~k·1.15
+frames in any order and tolerates dropped frames without retransmission. The idea worth
+borrowing from it — **compressing the payload before encoding** — is on the list above. No
+code from that project is used here; it is acknowledged as independent prior art.
 
 ## Attribution & license
 
