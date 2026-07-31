@@ -1,0 +1,37 @@
+{
+  "name": "@optical-transfer/core",
+  "version": "0.0.0",
+  "description": "Pure, dependency-free LT-fountain optical transfer transport (sender/receiver + frame protocol).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "keywords": [
+    "fountain-code",
+    "luby-transform",
+    "qr",
+    "air-gap",
+    "file-transfer",
+    "optical"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

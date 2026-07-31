@@ -1,0 +1,18 @@
+{
+  "name": "optical-transfer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Air-gapped file transfer over screen and camera, using LT fountain codes and animated QR frames.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}
