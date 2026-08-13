@@ -12,19 +12,23 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build:viewer": "node web/viewer/build.mjs"
   },
   "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
-  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer#readme",
+  "homepage": "https://github.com/tristanheilman/optical-transfer#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git"
+    "url": "https://github.com/tristanheilman/optical-transfer.git"
   },
   "bugs": {
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer/issues"
+    "url": "https://github.com/tristanheilman/optical-transfer/issues"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }

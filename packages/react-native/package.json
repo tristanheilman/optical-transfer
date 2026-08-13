@@ -1,6 +1,6 @@
 {
   "name": "@optical-transfer/react-native",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React Native bindings for optical-transfer: air-gapped file transfer over screen and camera (LT fountain + animated QR).",
   "main": "src/index",
   "types": "src/index",
@@ -10,11 +10,17 @@
   ],
   "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
-  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/tristanheilman/optical-transfer#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git",
+    "url": "https://github.com/tristanheilman/optical-transfer.git",
     "directory": "packages/react-native"
+  },
+  "bugs": {
+    "url": "https://github.com/tristanheilman/optical-transfer/issues"
   },
   "keywords": [
     "react-native",
@@ -31,7 +37,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@optical-transfer/core": "*",
+    "@optical-transfer/core": "^0.1.0",
     "pako": "^2.1.0"
   },
   "peerDependencies": {

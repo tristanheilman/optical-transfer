@@ -72,13 +72,21 @@ export function encodeGif(file: Uint8Array, opts: EncodeGifOptions = {}): GifRes
   const margin = Math.ceil(needed * (overhead - 1)) + 2;
   const frames = Math.max(minFrames, needed + margin);
 
-  // Every frame payload has the same length, so all QRs share one version →
-  // uniform GIF dimensions. Force the first frame's version on the rest.
+  // Frame payloads all have the same length, but that does not put them all on
+  // the same QR version: qrcode picks a version from the *content* via its
+  // segment optimizer, so two equal-length frames can differ by a version or
+  // more. Every GIF frame must share one size, so find the largest version any
+  // frame needs and render them all at it.
   const b64s: string[] = [];
   for (let seq = 0; seq < frames; seq++) b64s.push(bytesToBase64(tx.frame(seq)));
 
-  const first = QRCode.create(b64s[0], { errorCorrectionLevel: ecl });
-  const version = first.version;
+  let version = 1;
+  for (const b64 of b64s) {
+    const v = QRCode.create(b64, { errorCorrectionLevel: ecl }).version;
+    if (v > version) version = v;
+  }
+
+  const first = QRCode.create(b64s[0], { errorCorrectionLevel: ecl, version });
   const size = first.modules.size;
   const dim = size + quiet * 2;
   const scale = opts.scale ?? Math.max(3, Math.floor(340 / dim));

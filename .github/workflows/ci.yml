@@ -1,0 +1,35 @@
+name: CI
+
+# Runs on main and on every pull request. Fork PRs are covered by the
+# pull_request trigger; same-repo branches get their check through their PR,
+# which keeps a push and its PR from running the same commit twice.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # docs/viewer/index.html is a build artifact that GitHub Pages serves, so
+      # a stale commit of it silently ships an old encoder to the live viewer.
+      - name: Viewer bundle is up to date
+        run: |
+          npm run build:viewer
+          git diff --exit-code -- docs/viewer/index.html

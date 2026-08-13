@@ -1,16 +1,16 @@
 # optical-transfer
 
-[![license](https://img.shields.io/github/license/tristanheilman/react-native-optical-transfer)](LICENSE)
+[![license](https://img.shields.io/github/license/tristanheilman/optical-transfer)](LICENSE)
 [![core](https://img.shields.io/badge/%40optical--transfer%2Fcore-tested-brightgreen)](packages/core)
 [![react-native](https://img.shields.io/badge/react--native-0.85-blue)](packages/react-native)
 [![status](https://img.shields.io/badge/status-experimental-orange)](#status)
-[![live GIF viewer](https://img.shields.io/badge/live-GIF%20viewer-8b5cf6)](https://tristanheilman.github.io/react-native-optical-transfer/docs/viewer/)
+[![live GIF viewer](https://img.shields.io/badge/live-GIF%20viewer-8b5cf6)](https://tristanheilman.github.io/optical-transfer/docs/viewer/)
 
 Air-gapped, one-way file transfer over **screen → camera**. One device animates a
 stream of QR codes; another films the screen and reconstructs the file. No network,
 no pairing, no handshake, no special permissions.
 
-> ### ▶ [Try the live GIF viewer](https://tristanheilman.github.io/react-native-optical-transfer/docs/viewer/)
+> ### ▶ [Try the live GIF viewer](https://tristanheilman.github.io/optical-transfer/docs/viewer/)
 > Drop a shared **[optical-transfer GIF](#shareable-gif-transfer)** and get the file back — right in your browser, nothing uploaded. Make one on a phone (**Share as GIF**) or in the viewer's **Make a GIF** tab.
 
 The transport is built on **LT (Luby transform) fountain codes**: each QR frame carries

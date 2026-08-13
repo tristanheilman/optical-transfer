@@ -1,6 +1,6 @@
 {
   "name": "@optical-transfer/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Pure, dependency-free LT-fountain optical transfer transport (sender/receiver + frame protocol).",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
@@ -31,14 +32,17 @@
   ],
   "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
-  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer/tree/main/packages/core#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/tristanheilman/optical-transfer/tree/main/packages/core#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git",
+    "url": "https://github.com/tristanheilman/optical-transfer.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer/issues"
+    "url": "https://github.com/tristanheilman/optical-transfer/issues"
   },
   "devDependencies": {
     "tsx": "^4.19.2",

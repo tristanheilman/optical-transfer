@@ -232,7 +232,7 @@ function main() {
     encode,
     el("footer", { class: "ft" },
       el("span", {}, "Built on LT fountain codes. "),
-      el("a", { class: "link", href: "https://github.com/tristanheilman/react-native-optical-transfer", target: "_blank", rel: "noreferrer noopener" }, "GitHub"),
+      el("a", { class: "link", href: "https://github.com/tristanheilman/optical-transfer", target: "_blank", rel: "noreferrer noopener" }, "GitHub"),
     ),
   );
 }
