@@ -3,6 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as zlib from "node:zlib";
+import omggif from "omggif";
 
 import { encodeGif } from "../src/encode";
 import { decodeGif } from "../src/decode";
@@ -41,6 +42,39 @@ test("round-trips with a compression codec", () => {
   assert.ok(gz.frames <= plain.frames, "compression should not increase frame count");
   const res = decodeGif(gz.gif, { codecs: [deflate] });
   assert.deepEqual(res.data, file);
+});
+
+// The QR version is chosen from frame *content* by qrcode's segment optimizer,
+// not from payload length — so the first frame is not an upper bound for the
+// rest. Session 2 is a pinned case where frame 0 fits version 8 but a later
+// frame needs 9; sizing every frame off frame 0 threw on it.
+test("encodes when a later frame needs a larger QR version than the first", () => {
+  const file = new TextEncoder().encode("compress me ".repeat(200));
+  const { gif } = encodeGif(file, { blockLen: 128, sessionId: 2 });
+  const res = decodeGif(gif);
+  assert.deepEqual(res.data, file);
+});
+
+test("encodes across many session ids without throwing", () => {
+  const file = new TextEncoder().encode("compress me ".repeat(200));
+  for (let sessionId = 0; sessionId < 150; sessionId++) {
+    assert.doesNotThrow(
+      () => encodeGif(file, { blockLen: 128, sessionId }),
+      `session ${sessionId} failed to encode`,
+    );
+  }
+});
+
+test("every GIF frame matches the reported dimensions", () => {
+  const file = new TextEncoder().encode("compress me ".repeat(200));
+  const { gif, width, height, frames } = encodeGif(file, { blockLen: 128, sessionId: 2 });
+  const reader = new omggif.GifReader(gif as Buffer);
+  assert.equal(reader.numFrames(), frames);
+  for (let f = 0; f < reader.numFrames(); f++) {
+    const info = reader.frameInfo(f);
+    assert.equal(info.width, width, `frame ${f} width`);
+    assert.equal(info.height, height, `frame ${f} height`);
+  }
 });
 
 test("reports an error when a compressed payload has no matching codec", () => {

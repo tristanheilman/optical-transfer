@@ -1,6 +1,6 @@
 {
   "name": "@optical-transfer/gif",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Encode an optical-transfer payload as a shareable animated GIF of QR frames, and decode a GIF back into the file.",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,23 +12,40 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
-  "keywords": ["qr", "gif", "fountain-code", "optical", "file-transfer", "air-gap"],
+  "keywords": [
+    "qr",
+    "gif",
+    "fountain-code",
+    "optical",
+    "file-transfer",
+    "air-gap"
+  ],
   "author": "Tristan Heilman <tristanheilman@outlook.com> (https://github.com/tristanheilman)",
   "license": "MIT",
-  "homepage": "https://github.com/tristanheilman/react-native-optical-transfer/tree/main/packages/gif#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/tristanheilman/optical-transfer/tree/main/packages/gif#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tristanheilman/react-native-optical-transfer.git",
+    "url": "https://github.com/tristanheilman/optical-transfer.git",
     "directory": "packages/gif"
   },
+  "bugs": {
+    "url": "https://github.com/tristanheilman/optical-transfer/issues"
+  },
   "dependencies": {
-    "@optical-transfer/core": "*",
+    "@optical-transfer/core": "^0.1.0",
     "jsqr": "^1.4.0",
     "omggif": "^1.0.10",
     "qrcode": "^1.5.4"
